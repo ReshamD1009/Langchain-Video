@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Chatbot</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #f4f6f7;
+            --text-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .chat-header h1 {
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+
+        .chat-body {
+            padding: 1.5rem;
+        }
+
+        #query {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        #response {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f1f5f8;
+            border-radius: 8px;
+            min-height: 150px;
+            border: 1px solid #e0e4e8;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--primary-color);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-header">
+            <h1>Video Chatbot</h1>
+        </div>
+        <div class="chat-body">
+            <textarea id="query" placeholder="Ask me anything about the video..."></textarea>
+            <button onclick="sendQuery()" class="btn">Send Query</button>
+            <div id="response"></div>
+        </div>
+    </div>
+
+    <script>
+        function sendQuery() {
+            const query = document.getElementById('query').value;
+            const responseDiv = document.getElementById('response');
+            
+            // Trim query and validate
+            if (!query.trim()) {
+                responseDiv.innerHTML = '<p style="color: red;">Please enter a query</p>';
+                return;
+            }
+
+            // Clear previous response and show loading
+            responseDiv.innerHTML = '<p class="loading">Thinking...</p>';
+
+            // Send POST request
+            axios.post('/chat', new URLSearchParams({
+                'query': query
+            }))
+            .then(function (response) {
+                // Handle successful response
+                responseDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <span style="margin-right: 10px; font-size: 1.5rem;"></span>
+                        <strong>Chatbot Response:</strong>
+                    </div>
+                    ${response.data.response}
+                `;
+            })
+            .catch(function (error) {
+                // Handle error
+                responseDiv.innerHTML = `
+                    <div style="color: red; display: flex; align-items: center;">
+                        <span style="margin-right: 10px; font-size: 1.5rem;"></span>
+                        Error: ${error.response?.data?.error || 'Something went wrong'}
+                    </div>
+                `;
+            });
+        }
+
+        // Optional: Add enter key support for sending query
+        document.getElementById('query').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendQuery();
+            }
+        });
+    </script>
+</body>
+</html>
